@@ -36,8 +36,14 @@ class Board:
 
     def reveal_cell(self, x: int, y: int) -> bool:
         # Cell does not exist, dumbo
-        if self.get_cell(x, y) is None:
+        cell_to_reveal = self.get_cell(x, y)
+        if cell_to_reveal is None:
             print("This shouldnt happen, invalid cell")
+            return False
+
+        # Cell is already revealed, duh
+        if cell_to_reveal.is_revealed:
+            print("This shouldn't happen, this is already revealed")
             return False
 
         # Kaboom
