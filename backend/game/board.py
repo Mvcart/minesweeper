@@ -1,6 +1,6 @@
 # backend/game/board.py
 
-from typing import List, Optional
+from typing import List, Optional, Tuple, Dict
 from .cell import Cell
 
 """
@@ -10,6 +10,8 @@ from .cell import Cell
     Future: Make dynamic board a possibility, making the neighbor mine count dynamic.
 """
 
+NEIGHBOR_OFFSETS = {(0, 1), (0, -1), (1, 0), (-1, 0), (1, -1), (-1, 1), (-1, -1), (1, 1)}
+
 class Board:
     def __init__(self, width: int, height: int) -> None:
         self.width = width
@@ -17,22 +19,7 @@ class Board:
         self.grid = [[Cell(x, y)
                       for y in range(height)] 
                       for x in range(width)]
-        
-    def get_cell(self, x: int, y: int) -> Optional[Cell]:
-        if 0 <= x < self.width and 0 <= y < self.height:
-            return self.grid[x][y]
-        return None
-
-    def get_neighbors(self, x: int, y: int) -> List[Cell]:
-        neighbors: List[Cell] = []
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
-                if dx == dy == 0:
-                    continue
-                neighbor_cell = self.get_cell(x + dx, y + dy)
-                if neighbor_cell:
-                    neighbors.append(neighbor_cell)
-        return neighbors
+        self._neighbor_cache: Dict[Tuple[int, int], int] = {} # (x, y) -> count
 
     def reveal_cell(self, x: int, y: int) -> bool:
         # Cell does not exist, dumbo
@@ -47,54 +34,116 @@ class Board:
             return False
 
         # Kaboom
-        if self.grid[x][y].is_mine:
+        if cell_to_reveal.is_mine:
             return True
 
         # Recursive logic
-        if self.neighbor_mine_count(x, y) == 0:
-            self.reveal_cell_recursive(x, y)
+        if self.get_neighbor_mine_count(x, y) == 0:
+            self._reveal_cell_recursive(x, y)
         else:
-            self.grid[x][y].reveal()
+            cell_to_reveal.reveal()
 
         # No kaboom
         return False
 
+    # mine placement logic
+    def place_mine_at(self, x: int, y: int) -> bool:
+        cell = self.get_cell(x, y)
+        if not cell or cell.is_mine:
+            return False
+
+        cell.place_mine()
+
+        # Invalidate cache for all affected cells
+        self._invalidate_cache_for_cell_and_neighbors(x, y)
+        
+        # Recalculate neighbor counts for all affected cells
+        self._update_neighbor_counts_for_cell_and_neighbors(x, y)
+
+        return True
+
     # lazy neighbor mine count (change to dynamic for different game modes!)
-    def neighbor_mine_count(self, x: int, y: int) -> int:
-        cell = self.grid[x][y]
+    def get_neighbor_mine_count(self, x: int, y: int) -> int:
+        cache_key = (x, y)
+        
+        if cache_key in self._neighbor_cache:
+            return self._neighbor_cache[cache_key]
+        
+        n_neighboring_mines = self._count_neighboring_mines(x, y)
+        self._neighbor_cache[cache_key] = n_neighboring_mines
 
-        if cell._neighbor_mines is not None:
-            return cell.neighbor_mines
+        cell = self.get_cell(x, y)
+        if cell:
+            cell.neighbor_mines = n_neighboring_mines
+        return n_neighboring_mines
+        
+    def get_neighbors(self, x: int, y: int) -> List[Cell]:
+        neighbors: List[Cell] = []
+        for offset_x, offset_y in NEIGHBOR_OFFSETS:
+            neighbor_cell = self.get_cell(x + offset_x, y + offset_y)
+            
+            if neighbor_cell:
+                neighbors.append(neighbor_cell)
+        return neighbors
+        
+    def get_cell(self, x: int, y: int) -> Optional[Cell]:
+        if 0 <= x < self.width and 0 <= y < self.height:
+            return self.grid[x][y]
+        return None
 
-        neighbor_mines = 0
-        for neighbor in self.get_neighbors(x, y):
-            if neighbor.is_mine:
-                neighbor_mines += 1
-        return neighbor_mines
+    # Private methods:
     
     # Recursive cell revealing logic
-    def reveal_cell_recursive(self, x: int, y: int) -> None:
+    def _reveal_cell_recursive(self, x: int, y: int) -> None:
         current_cell = self.grid[x][y]
         
         current_cell.reveal()
 
-        if self.neighbor_mine_count(x, y) == 0:
-            for neighbor in self.get_neighbors(x, y):
-                # Reveal neighbor
-                if not neighbor.is_revealed:
-                    neighbor.reveal()
-                
-                    # If this neighbor has 0 adjacent mines, reveal their neighbors
-                    if self.neighbor_mine_count(neighbor.x, neighbor.y) == 0:
-                        self.reveal_cell_recursive(neighbor.x, neighbor.y)
+        if self.get_neighbor_mine_count(x, y) != 0:
+            return
 
-    def calculate_all_neighbors(self) -> None:
-        for x in range(self.width):
-            for y in range(self.height):
-                cell = self.grid[x][y]
-                if not cell.is_mine:
-                    count = self.neighbor_mine_count(x, y)
-                    cell.set_neighbor_mines(count)
+        for neighbor in self.get_neighbors(x, y):
+            # If neighbor is not revealed yet...
+            if neighbor.is_revealed:
+                continue
+            
+            # ...Reveal it!
+            neighbor.reveal()
+        
+            # If this neighbor has 0 adjacent mines, also reveal its neighbors
+            if self.get_neighbor_mine_count(neighbor.x, neighbor.y) == 0:
+                self._reveal_cell_recursive(neighbor.x, neighbor.y)
+    
+    def _invalidate_cache_for_cell_and_neighbors(self, x: int, y: int) -> None:
+        self._neighbor_cache.pop((x, y), None)
+        
+        for neighbor in self.get_neighbors(x, y):
+            self._neighbor_cache.pop((neighbor.x, neighbor.y), None)
+
+    def _update_neighbor_counts_for_cell_and_neighbors(self, x: int, y:int) -> None:
+        if not self._cell_exists(x, y):
+            return
+    
+        self.get_neighbor_mine_count(x, y)
+
+        for neighbor in self.get_neighbors(x, y):
+            self.get_neighbor_mine_count(neighbor.x, neighbor.y)
+
+    def _count_neighboring_mines(self, x: int, y: int) -> int:
+        neighbor_mines = 0
+        
+        for neighbor in self.get_neighbors(x, y):
+            if neighbor.is_mine:
+                neighbor_mines += 1
+        
+        return neighbor_mines
+    
+    def _cell_exists(self, x: int, y:int) -> bool:
+        cell = self.get_cell(x, y)
+        if not cell:
+            return False
+        
+        return True
 
     def __str__(self) -> str:
         rows = []
@@ -102,15 +151,3 @@ class Board:
             row_cells = [str(self.grid[x][y]) for x in range(self.width)]
             rows.append("| " + " | ".join(row_cells) + " |")
         return "\n".join(rows)
-
-
-    # FIX CACHE DEFINING
-    def place_mine_at(self, x: int, y: int) -> None:
-        cell = self.get_cell(x, y)
-        if cell:
-            cell.place_mine()
-            # Clean neighbor cache
-            for nx, ny in [(x+dx, y+dy) for dx in (-1,0,1) for dy in (-1,0,1) if not (dx==0 and dy==0)]:
-                neighbor = self.get_cell(nx, ny)
-                if neighbor:
-                    neighbor._neighbor_mines = None
