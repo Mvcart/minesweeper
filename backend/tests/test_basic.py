@@ -1,11 +1,7 @@
 # backend/tests/test_basic.py
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__))) # For finding the "game" dir
-
-from game.cell import Cell
-from game.board import Board
+from ..game.cell import Cell
+from ..game.board import Board
 
 b = Board(8,6)
 print(f'Board: {b.width}x{b.height}')
