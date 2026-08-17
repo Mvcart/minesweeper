@@ -15,6 +15,18 @@ class MinePlacementStrategy(ABC):
                     ) -> List[Tuple[int, int]]:
         pass
 
+"""
+    NOTE: This method doesnt guarantees that a game is winnable. Example:
+    Game(5,5,3,2,2,seed=42) =
+    | . | 1 | 0 | 0 | 0 |
+    | . | 1 | 0 | 0 | 0 |
+    | . | 1 | 0 | 0 | 0 |
+    | . | 1 | 0 | 1 | 1 |
+    | . | 1 | 0 | 1 | . |
+
+    Notice that there is no way to guarantee where are the two mines at the left side.
+    FUTURE: Make a strategy that guarantees that the placement is winnable 
+"""
 class RandomMinePlacement(MinePlacementStrategy):
     def __init__(self, seed: int):
         self.seed = seed

@@ -1,19 +1,29 @@
 # backend/game/board.py
 
 from typing import List, Optional, Tuple, Dict
+
+from backend.exceptions import InvalidMoveError, InvalidConfigurationError
 from .cell import Cell
 
 """
     Basic board class for minesweeper
-    Orchestrates the "Cell" object
+    Orchestrates the f"Cell" object
 
     Future: Make dynamic board a possibility, making the neighbor mine count dynamic.
+            Make convex board shapes work (it doesnt seem very difficult)
 """
 
 NEIGHBOR_OFFSETS = {(0, 1), (0, -1), (1, 0), (-1, 0), (1, -1), (-1, 1), (-1, -1), (1, 1)}
 
 class Board:
+    """
+    Minesweeper grid.
+    Manages cells, mine placement, neighbor queries and reveal logic.
+    """
     def __init__(self, width: int, height: int) -> None:
+        if width <= 0 or height <= 0:
+            raise InvalidConfigurationError("Width and height must be positive.")
+
         self.width = width
         self.height = height
         self.grid = [[Cell(x, y)
@@ -21,27 +31,42 @@ class Board:
                       for x in range(width)]
         self._neighbor_cache: Dict[Tuple[int, int], int] = {} # (x, y) -> count
 
+    # flag on/off switch
+    def flag(self, x: int, y: int) -> None:
+        cell = self.get_cell(x, y)
+
+        if cell is None:
+            raise InvalidMoveError(f"Cell ({x}, {y}) is out of bounds.")
+        if cell.is_revealed:
+            raise InvalidMoveError(f"Cell ({x}, {y}) is already revealed.")
+        
+        cell.toggle_flagged()
+
+    # reveal cell logic (can trigger recursive logic)
     def reveal_cell(self, x: int, y: int) -> bool:
         # Cell does not exist, dumbo
         cell_to_reveal = self.get_cell(x, y)
         if cell_to_reveal is None:
-            print("This shouldnt happen, invalid cell")
-            return False
+            raise InvalidMoveError(f"Cell ({x}, {y}) is out of bounds.")
 
         # Cell is already revealed, duh
         if cell_to_reveal.is_revealed:
-            print("This shouldn't happen, this is already revealed")
-            return False
+            raise InvalidMoveError(f"Cell ({x}, {y}) is already revealed.")
+
+        # Cell is flagged
+        if cell_to_reveal.is_flagged:
+            raise InvalidMoveError(f"Cell ({x}, {y}) is flagged.")
 
         # Kaboom
         if cell_to_reveal.is_mine:
+            cell_to_reveal.reveal()
             return True
+
+        cell_to_reveal.reveal()
 
         # Recursive logic
         if self.get_neighbor_mine_count(x, y) == 0:
             self._reveal_cell_recursive(x, y)
-        else:
-            cell_to_reveal.reveal()
 
         # No kaboom
         return False
@@ -76,7 +101,8 @@ class Board:
         if cell:
             cell.neighbor_mines = n_neighboring_mines
         return n_neighboring_mines
-        
+    
+    # returns the list of neighbors
     def get_neighbors(self, x: int, y: int) -> List[Cell]:
         neighbors: List[Cell] = []
         for offset_x, offset_y in NEIGHBOR_OFFSETS:
@@ -86,6 +112,7 @@ class Board:
                 neighbors.append(neighbor_cell)
         return neighbors
         
+    # returns the Cell object
     def get_cell(self, x: int, y: int) -> Optional[Cell]:
         if 0 <= x < self.width and 0 <= y < self.height:
             return self.grid[x][y]
@@ -93,18 +120,14 @@ class Board:
 
     # Private methods:
     
-    # Recursive cell revealing logic
+    # Recursive cell revealing logic (reveal only safe cells)
     def _reveal_cell_recursive(self, x: int, y: int) -> None:
-        current_cell = self.grid[x][y]
-        
-        current_cell.reveal()
-
         if self.get_neighbor_mine_count(x, y) != 0:
             return
 
         for neighbor in self.get_neighbors(x, y):
-            # If neighbor is not revealed yet...
-            if neighbor.is_revealed:
+            # If neighbor is not revealed (or flagged) yet...
+            if neighbor.is_revealed or neighbor.is_flagged:
                 continue
             
             # ...Reveal it!
