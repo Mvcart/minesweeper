@@ -21,6 +21,17 @@ class Cell:
     def toggle_flagged(self) -> None:
         self.is_flagged = not self.is_flagged
 
+    def to_dict(self) -> dict:
+        cell_properties = {}
+        cell_properties["x"] = self.x
+        cell_properties["y"] = self.y
+        cell_properties["is_flagged"] = self.is_flagged
+        cell_properties["is_revealed"] = self.is_revealed
+        cell_properties["is_mine"] = self.is_mine
+        cell_properties["neighbor_mines"] = self.neighbor_mines
+        
+        return cell_properties
+
     def __str__(self) -> str:
         if self.is_flagged:
             return "F"

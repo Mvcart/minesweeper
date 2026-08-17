@@ -82,3 +82,77 @@ class TestGameState:
             assert lost_game.state == GameState.LOST
 
             lost_game.flag(4, 0)
+
+    def test_to_dict_lost(self, seeded_game_42):
+        lost_game = seeded_game_42
+
+        dictionary = lost_game.to_dict()
+
+        assert isinstance(dictionary, dict)
+        assert dictionary["id"] == lost_game.id
+        assert dictionary["state"] == lost_game.state.value
+        assert dictionary["width"] == lost_game.width
+        assert dictionary["height"] == lost_game.height
+        assert dictionary["mine_count"] == lost_game.mine_count
+        assert dictionary["start_time"] == lost_game.start_time.isoformat()
+        assert dictionary["end_time"] == None
+        assert len(dictionary["board"]) == lost_game.height
+        for row in dictionary["board"]:
+            assert len(row) == lost_game.width
+
+        for y in range(lost_game.height):
+            for x in range(lost_game.width):
+                if lost_game.board.get_cell(x, y).is_revealed:
+                    assert dictionary["board"][y][x]["is_mine"] == lost_game.board.get_cell(x, y).is_mine
+                    assert dictionary["board"][y][x]["neighbor_mines"] == lost_game.board.get_cell(x, y).neighbor_mines
+                else:
+                    assert dictionary["board"][y][x]["is_mine"] == False
+                    assert dictionary["board"][y][x]["neighbor_mines"] == None
+
+        lost_game.click(4,0)
+        dictionary = lost_game.to_dict()
+        
+        assert dictionary["state"] == lost_game.state.value
+        assert dictionary["end_time"] == lost_game.end_time.isoformat()
+        for y in range(lost_game.height):
+            for x in range(lost_game.width):
+                assert dictionary["board"][y][x]["is_mine"] == lost_game.board.get_cell(x, y).is_mine
+                assert dictionary["board"][y][x]["neighbor_mines"] == lost_game.board.get_cell(x, y).neighbor_mines
+
+    def test_to_dict_won(self, seeded_game_42):
+        won_game = seeded_game_42
+
+        dictionary = won_game.to_dict()
+
+        assert isinstance(dictionary, dict)
+        assert dictionary["id"] == won_game.id
+        assert dictionary["state"] == won_game.state.value
+        assert dictionary["width"] == won_game.width
+        assert dictionary["height"] == won_game.height
+        assert dictionary["mine_count"] == won_game.mine_count
+        assert dictionary["start_time"] == won_game.start_time.isoformat()
+        assert dictionary["end_time"] == None
+        assert len(dictionary["board"]) == won_game.height
+        for row in dictionary["board"]:
+            assert len(row) == won_game.width
+
+        for y in range(won_game.height):
+            for x in range(won_game.width):
+                if won_game.board.get_cell(x, y).is_revealed:
+                    assert dictionary["board"][y][x]["is_mine"] == won_game.board.get_cell(x, y).is_mine
+                    assert dictionary["board"][y][x]["neighbor_mines"] == won_game.board.get_cell(x, y).neighbor_mines
+                else:
+                    assert dictionary["board"][y][x]["is_mine"] == False
+                    assert dictionary["board"][y][x]["neighbor_mines"] == None
+
+        won_game.click(0, 2)
+        won_game.click(0, 1)
+        won_game.click(0, 4)
+        dictionary = won_game.to_dict()
+        
+        assert dictionary["state"] == won_game.state.value
+        assert dictionary["end_time"] == won_game.end_time.isoformat()
+        for y in range(won_game.height):
+            for x in range(won_game.width):
+                assert dictionary["board"][y][x]["is_mine"] == won_game.board.get_cell(x, y).is_mine
+                assert dictionary["board"][y][x]["neighbor_mines"] == won_game.board.get_cell(x, y).neighbor_mines

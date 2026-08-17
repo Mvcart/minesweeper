@@ -118,8 +118,16 @@ class Board:
             return self.grid[x][y]
         return None
 
+    def to_dict(self) -> dict:
+        board_list = []
+        for y in range(self.height):
+            row = []
+            for x in range(self.width):
+                row.append(self.get_cell(x, y).to_dict())
+            board_list.append(row)
+        return board_list
+
     # Private methods:
-    
     # Recursive cell revealing logic (reveal only safe cells)
     def _reveal_cell_recursive(self, x: int, y: int) -> None:
         if self.get_neighbor_mine_count(x, y) != 0:

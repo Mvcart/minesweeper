@@ -1,6 +1,7 @@
 # backend/game/game.py
 
 import secrets
+import uuid
 from datetime import datetime
 from typing import Optional, List, Tuple
 
@@ -41,6 +42,8 @@ class Game:
         max_mines = (width * height) - len(safe_cells)
         if mine_count > max_mines:
             raise InvalidConfigurationError(f"Too many mines for this board size. Max mines: {(max_mines)}")
+
+        self.id = str(uuid.uuid4())
 
         # self.safe_zone_strategy = safe_zone_strategy
 
@@ -84,7 +87,26 @@ class Game:
             raise GameAlreadyEndedError(f"Game is already {self.state.value}.")
 
         self.board.flag(x, y)
-    
+
+    def to_dict(self) -> dict:
+        data = {}
+        data["id"] = self.id
+        data["state"] = self.state.value
+        data["width"] = self.width
+        data["height"] = self.height
+        data["mine_count"] = self.mine_count
+        data["start_time"] = self.start_time.isoformat() if self.start_time else None
+        data["end_time"] = self.end_time.isoformat() if self.end_time else None
+        data["board"] = self.board.to_dict()
+        if self.state == GameState.PLAYING:
+            for line in data["board"]:
+                for cell in line:
+                    if not cell["is_revealed"]:
+                        cell["is_mine"] = False
+                        cell["neighbor_mines"] = None
+
+        return data
+
     # Private methods
     # Maybe outsource this func like the mine placement?
     def _get_safe_zone(self, x: int, y: int) -> List[Tuple[int, int]]:

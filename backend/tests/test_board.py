@@ -150,3 +150,22 @@ class TestBoardState:
         # x++ until \n, then x = 0.
         # y = height, y-- at \n.
         assert str(board) == "| . | . | * |\n| . | 1 | F |\n| . | . | . |"
+
+    def test_to_dict(self):
+        board = Board(2, 2)
+
+        board_list = board.to_dict()
+        
+        assert isinstance(board_list, list)
+
+        assert len(board_list) == board.height
+        for y, row in enumerate(board_list):
+            assert len(row) == board.width
+            for x, cell in enumerate(row):
+                assert isinstance(cell, dict)
+                assert cell["x"] == board.get_cell(x, y).x
+                assert cell["y"] == board.get_cell(x, y).y
+                assert cell["is_flagged"] == board.get_cell(x, y).is_flagged
+                assert cell["is_revealed"] == board.get_cell(x, y).is_revealed
+                assert cell["is_mine"] == board.get_cell(x, y).is_mine
+                assert cell["neighbor_mines"] == board.get_cell(x, y).neighbor_mines
