@@ -26,9 +26,10 @@ class Board:
 
         self.width = width
         self.height = height
-        self.grid = [[Cell(x, y)
-                      for y in range(height)] 
-                      for x in range(width)]
+        self.grid = [[
+            Cell(x, y)
+            for y in range(height)] 
+            for x in range(width)]
         self._neighbor_cache: Dict[Tuple[int, int], int] = {} # (x, y) -> count
 
     # flag on/off switch
@@ -38,8 +39,8 @@ class Board:
         if cell is None:
             raise InvalidMoveError(f"Cell ({x}, {y}) is out of bounds.")
         if cell.is_revealed:
-            raise InvalidMoveError(f"Cell ({x}, {y}) is already revealed.")
-        
+            return
+
         cell.toggle_flagged()
 
     # reveal cell logic (can trigger recursive logic)
@@ -51,11 +52,11 @@ class Board:
 
         # Cell is already revealed, duh
         if cell_to_reveal.is_revealed:
-            raise InvalidMoveError(f"Cell ({x}, {y}) is already revealed.")
+            return
 
         # Cell is flagged
         if cell_to_reveal.is_flagged:
-            raise InvalidMoveError(f"Cell ({x}, {y}) is flagged.")
+            return
 
         # Kaboom
         if cell_to_reveal.is_mine:
@@ -118,8 +119,16 @@ class Board:
             return self.grid[x][y]
         return None
 
+    def to_dict(self) -> dict:
+        board_list = []
+        for y in range(self.height):
+            row = []
+            for x in range(self.width):
+                row.append(self.get_cell(x, y).to_dict())
+            board_list.append(row)
+        return board_list
+
     # Private methods:
-    
     # Recursive cell revealing logic (reveal only safe cells)
     def _reveal_cell_recursive(self, x: int, y: int) -> None:
         if self.get_neighbor_mine_count(x, y) != 0:

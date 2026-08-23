@@ -61,6 +61,17 @@ class TestCellState:
         cell.neighbor_mines = -1
         assert cell.neighbor_mines == -1
 
+    def test_to_dict(self):
+        cell = Cell(0, 0)
+        dictionary = cell.to_dict()
+        assert isinstance(dictionary, dict)
+        assert dictionary["x"] == cell.x
+        assert dictionary["y"] == cell.y
+        assert dictionary["is_flagged"] == cell.is_flagged
+        assert dictionary["is_revealed"] == cell.is_revealed
+        assert dictionary["is_mine"] == cell.is_mine
+        assert dictionary["neighbor_mines"] == cell.neighbor_mines
+
 class TestCellString:
     def test_str_unrevealed(self):
         cell = Cell(0, 0)
