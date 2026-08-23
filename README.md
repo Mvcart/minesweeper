@@ -1,57 +1,52 @@
-# Minesweeper Game Engine
+# Minesweeper
 
-A clean, well-architected Minesweeper game engine in Python, showcasing object-oriented design, testability, and extensibility.
-
-## Status
-
-**Core engine complete** - Backend game logic is functional and ready for frontend integration.
+Full-stack Minesweeper game with Python backend and web interface.
 
 ## Features
 
-- Clean OOP architecture with strategy pattern
-- Seed-based reproducibility for testing
-- Extensible mine placement algorithms
-- Recursive cell revealing logic
+- Classic Minesweeper gameplay
+- First-click safe guarantee
+- Flagging and recursive reveal
+- REST API with FastAPI
+- Clean web interface
+
+## Technologies
+
+- Backend: Python, FastAPI
+- Frontend: Vanilla JS, CSS Grid
+- Testing: pytest
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/yourusername/minesweeper.git
-cd minesweeper/backend
-python -m tests.test_game
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-## Architecture
+## Run the server
 
-Clean separation between:
+```bash
+uvicorn backend.main:app --reload
+```
 
-- Cell: Individual cell state
-- Board: Grid management and reveal logic
-- Game: Game orchestration and rules
-- MinePlacementStrategy: Pluggable mine algorithms
+## Open browser at `http://localhost:8000`
 
 ## Project Structure
 
-```
-backend/
-├── game/          # Core game logic
-├── strategies/    # Mine placement algorithms
-└── tests/         # Test suite
-```
-
-## Usage Example
-
-Run from the `backend/` directory:
-
-```python
-
-from game.game import Game
-
-game = Game(width=9, height=9, mine_count=10, 
-            first_click_x=4, first_click_y=4, seed=42)
-print(game.board)
+```lua
+minesweeper/
+├── backend
+│   ├── exceptions.py   # custom exceptions
+│   ├── game            # game classes
+│   ├── main.py         # FastAPI startup
+│   ├── strategies      # mine placement/safe zone strategies
+│   └── tests           # pytest tests
+└── frontend            # basic frontend files
+    ├── index.html
+    ├── script.js
+    └── style.css
 ```
 
-## License
+## LICENSE
 
-MIT License
+[MIT](LICENSE)
