@@ -26,9 +26,10 @@ class Board:
 
         self.width = width
         self.height = height
-        self.grid = [[Cell(x, y)
-                      for y in range(height)] 
-                      for x in range(width)]
+        self.grid = [[
+            Cell(x, y)
+            for y in range(height)] 
+            for x in range(width)]
         self._neighbor_cache: Dict[Tuple[int, int], int] = {} # (x, y) -> count
 
     # flag on/off switch
@@ -38,8 +39,8 @@ class Board:
         if cell is None:
             raise InvalidMoveError(f"Cell ({x}, {y}) is out of bounds.")
         if cell.is_revealed:
-            raise InvalidMoveError(f"Cell ({x}, {y}) is already revealed.")
-        
+            return
+
         cell.toggle_flagged()
 
     # reveal cell logic (can trigger recursive logic)
@@ -51,11 +52,11 @@ class Board:
 
         # Cell is already revealed, duh
         if cell_to_reveal.is_revealed:
-            raise InvalidMoveError(f"Cell ({x}, {y}) is already revealed.")
+            return
 
         # Cell is flagged
         if cell_to_reveal.is_flagged:
-            raise InvalidMoveError(f"Cell ({x}, {y}) is flagged.")
+            return
 
         # Kaboom
         if cell_to_reveal.is_mine:
