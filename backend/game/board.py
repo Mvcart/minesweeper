@@ -34,10 +34,8 @@ class Board:
 
     # flag on/off switch
     def flag(self, x: int, y: int) -> None:
-        cell = self.get_cell(x, y)
+        cell = self._get_cell_or_raise(x, y)
 
-        if cell is None:
-            raise InvalidMoveError(f"Cell ({x}, {y}) is out of bounds.")
         if cell.is_revealed:
             return
 
@@ -45,18 +43,27 @@ class Board:
 
     # reveal cell logic (can trigger recursive logic)
     def reveal_cell(self, x: int, y: int) -> bool:
-        # Cell does not exist, dumbo
-        cell_to_reveal = self.get_cell(x, y)
-        if cell_to_reveal is None:
-            raise InvalidMoveError(f"Cell ({x}, {y}) is out of bounds.")
+        # Cell does not exist
+        cell_to_reveal = self._get_cell_or_raise(x, y)
 
-        # Cell is already revealed, duh
+        # Cell is already revealed
         if cell_to_reveal.is_revealed:
-            return
+            neighbors = self.get_neighbors(x, y)
+            flag_count = 0
+            for neighbor in neighbors:
+                if neighbor.is_flagged:
+                    flag_count += 1
+
+            if flag_count == cell_to_reveal.neighbor_mines:
+                for neighbor in neighbors:
+                    if not neighbor.is_revealed and not neighbor.is_flagged:
+                        self.reveal_cell(neighbor.x, neighbor.y)
+                        if neighbor.is_mine: return True # Kaboom
+            return False
 
         # Cell is flagged
         if cell_to_reveal.is_flagged:
-            return
+            return False
 
         # Kaboom
         if cell_to_reveal.is_mine:
@@ -174,8 +181,14 @@ class Board:
         cell = self.get_cell(x, y)
         if not cell:
             return False
-        
+
         return True
+
+    def _get_cell_or_raise(self, x: int, y: int) -> Cell:
+        cell = self.get_cell(x, y)
+        if cell is None:
+            raise InvalidMoveError(f"Cell ({x}, {y}) is out of bounds.")
+        return cell
 
     def __str__(self) -> str:
         rows = []

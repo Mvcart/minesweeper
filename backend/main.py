@@ -19,8 +19,7 @@ games = {}
 def handle_game_error(e: Exception):
     if isinstance(e, (InvalidConfigurationError, InvalidMoveError)):
         return {"error": str(e)}, 400
-    if isinstance(e, GameAlreadyEndedError):
-        return {"error": str(e)}, 409
+
     return {"error": str(e)}, 500
 
 @app.post("/game")

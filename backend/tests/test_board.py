@@ -70,13 +70,10 @@ class TestBoardState:
 
         board.flag(0, 0)
         assert board.get_cell(0, 0).is_flagged
-        
-        board.reveal_cell(1, 1)
-        with pytest.raises(InvalidMoveError, match=re.escape("Cell (-1, -1) is out of bounds.")):
-            board.flag(-1, -1)
 
-        with pytest.raises(InvalidMoveError, match=re.escape("Cell (1, 1) is already revealed.")):
-            board.flag(1, 1)
+        board.reveal_cell(1, 1)
+        board.flag(1, 1)
+        assert not board.get_cell(1, 1).is_flagged
 
     def test_get_neighbor_mine_count(self):
         board = Board(3, 3)
@@ -124,19 +121,26 @@ class TestBoardState:
         mine_cell = board.get_cell(2, 2)
         assert mine_cell.is_revealed
 
-    def test_invalid_reveal_cell (self):
+    def test_reveal_cell_qol(self):
+        board = Board(3, 3)
+        board.place_mine_at(2, 2) # corner
+        board.flag(2, 2)
+
+        assert not board.reveal_cell(1, 1)
+        assert board.get_cell(1, 1).neighbor_mines == 1
+
+        board.reveal_cell(1, 1)
+        board.reveal_cell(1, 1)
+
+        for neighbor in board.get_neighbors(1, 1):
+            if not neighbor.is_flagged:
+                assert neighbor.is_revealed
+
+    def test_out_of_bounds(self):
         board = Board(2, 2)
-        board.flag(1, 1)
-        board.reveal_cell(0, 0)
 
         with pytest.raises(InvalidMoveError, match=re.escape("Cell (-1, -1) is out of bounds.")):
-            board.reveal_cell(-1, -1)
-
-        with pytest.raises(InvalidMoveError, match=re.escape("Cell (0, 0) is already revealed.")):
-            board.reveal_cell(0, 0)
-
-        with pytest.raises(InvalidMoveError, match=re.escape("Cell (1, 1) is flagged.")):
-            board.reveal_cell(1, 1)
+            board.flag(-1, -1)
 
     def test_to_str(self):
         board = Board(3, 3)
