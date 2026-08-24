@@ -19,7 +19,7 @@ async function gameCreate() {
         });
 
         const data = await response.json();
-        console.log('Game created successfully: ', data);
+        console.log('Game created successfully.\nGame data (JSON):', data);
 
         window.gameId = data.id;
         window.boardData = data.board;
@@ -94,18 +94,18 @@ async function clickCell(x, y) {
                 y: y
             })
         });
-
+        
         // awaits for the response (updated game json)
         const data = await response.json();
-
+        
         window.boardData = data.board;
         renderBoard(data.board);
-
-        console.log('Click response: ', data);
-
-        // verify endgame
+        
         if (data.state == 'lost') alert('KABOOM');
         else if (data.state == 'won') alert('YOU WIN');
+        
+        if (data) console.log('Clicked.');
+        else console.error('An unknown error has occurred while trying to click.')
     } catch (error) {
         console.error('An error has occurred while trying to click: ', error);
     }
@@ -123,7 +123,9 @@ async function flagCell(x, y) {
         });
 
         const data = await response.json();
-        console.log('Flag response: ', data);
+        
+        if (data) console.log('Flagged.');
+        else console.error('An unknown error has occurred while trying to flag.');
 
         window.boardData = data.board;
         renderBoard(data.board);
