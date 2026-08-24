@@ -76,8 +76,7 @@ class Game:
         if self.state == GameState.WAITING:
             self.start(x, y)
             return
-        elif self.state != GameState.PLAYING:
-            raise GameAlreadyEndedError(f"Game is already {self.state.value}.")
+        self._verify_game_state()
 
         hit_mine = self.board.reveal_cell(x, y)
 
@@ -90,8 +89,7 @@ class Game:
 
     # Toggle flag
     def flag(self, x: int, y: int) -> None:
-        if self.state != GameState.PLAYING:
-            raise GameAlreadyEndedError(f"Game is already {self.state.value}.")
+        self._verify_game_state()
 
         self.board.flag(x, y)
 
@@ -148,6 +146,10 @@ class Game:
                 if not cell.is_mine and not cell.is_revealed:
                     return False
         return True
+
+    def _verify_game_state(self):
+        if self.state not in [GameState.PLAYING, GameState.WAITING]:
+            raise GameAlreadyEndedError(f"Game is already {self.state.value}.")
 
     def __str__(self) -> str:
         return str(self.board);

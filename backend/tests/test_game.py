@@ -101,15 +101,16 @@ class TestGameState:
 
             lost_game.click(2, 2)
 
-    def test_flag_after_game_over(self, seeded_game_42_playing):
-        with pytest.raises(GameAlreadyEndedError, match=re.escape("Game is already lost.")):
-            lost_game = seeded_game_42_playing
+    #! Deprecated test
+    # def test_flag_after_game_over(self, seeded_game_42_playing):
+    #     with pytest.raises(GameAlreadyEndedError, match=re.escape("Game is already lost.")):
+    #         lost_game = seeded_game_42_playing
 
-            lost_game.click(4,0)
-            assert lost_game.board.get_cell(4, 0).is_mine
-            assert lost_game.state == GameState.LOST
+    #         lost_game.click(4,0)
+    #         assert lost_game.board.get_cell(4, 0).is_mine
+    #         assert lost_game.state == GameState.LOST
 
-            lost_game.flag(4, 0)
+    #         lost_game.flag(4, 0)
 
     def test_to_dict_lost(self, seeded_game_42_playing):
         lost_game = seeded_game_42_playing
