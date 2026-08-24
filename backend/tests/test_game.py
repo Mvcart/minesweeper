@@ -91,27 +91,6 @@ class TestGameState:
                     first_click_y=2
                 )
 
-    def test_click_after_game_over(self, seeded_game_42_playing):
-        with pytest.raises(GameAlreadyEndedError, match=re.escape("Game is already lost.")):
-            lost_game = seeded_game_42_playing
-
-            lost_game.click(4,0)
-            assert lost_game.board.get_cell(4, 0).is_mine
-            assert lost_game.state == GameState.LOST
-
-            lost_game.click(2, 2)
-
-    #! Deprecated test
-    # def test_flag_after_game_over(self, seeded_game_42_playing):
-    #     with pytest.raises(GameAlreadyEndedError, match=re.escape("Game is already lost.")):
-    #         lost_game = seeded_game_42_playing
-
-    #         lost_game.click(4,0)
-    #         assert lost_game.board.get_cell(4, 0).is_mine
-    #         assert lost_game.state == GameState.LOST
-
-    #         lost_game.flag(4, 0)
-
     def test_to_dict_lost(self, seeded_game_42_playing):
         lost_game = seeded_game_42_playing
 
@@ -185,3 +164,10 @@ class TestGameState:
             for x in range(won_game.width):
                 assert dictionary["board"][y][x]["is_mine"] == won_game.board.get_cell(x, y).is_mine
                 assert dictionary["board"][y][x]["neighbor_mines"] == won_game.board.get_cell(x, y).neighbor_mines
+
+    def test_qol_reveals_mine(self, seeded_game_42_playing):
+        game = seeded_game_42_playing;
+        game.flag(0, 4) # bad flag
+
+        game.click(1, 3) # should reveal mine
+        assert game.state == GameState.LOST

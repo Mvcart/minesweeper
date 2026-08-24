@@ -76,7 +76,8 @@ class Game:
         if self.state == GameState.WAITING:
             self.start(x, y)
             return
-        self._verify_game_state()
+        if self._game_ended():
+            return
 
         hit_mine = self.board.reveal_cell(x, y)
 
@@ -89,7 +90,8 @@ class Game:
 
     # Toggle flag
     def flag(self, x: int, y: int) -> None:
-        self._verify_game_state()
+        if self._game_ended():
+            return
 
         self.board.flag(x, y)
 
@@ -147,9 +149,10 @@ class Game:
                     return False
         return True
 
-    def _verify_game_state(self):
+    def _game_ended(self):
         if self.state not in [GameState.PLAYING, GameState.WAITING]:
-            raise GameAlreadyEndedError(f"Game is already {self.state.value}.")
+            return True
+        return False
 
     def __str__(self) -> str:
         return str(self.board);

@@ -58,11 +58,12 @@ class Board:
                 for neighbor in neighbors:
                     if not neighbor.is_revealed and not neighbor.is_flagged:
                         self.reveal_cell(neighbor.x, neighbor.y)
-            return
+                        if neighbor.is_mine: return True # Kaboom
+            return False
 
         # Cell is flagged
         if cell_to_reveal.is_flagged:
-            return
+            return False
 
         # Kaboom
         if cell_to_reveal.is_mine:
