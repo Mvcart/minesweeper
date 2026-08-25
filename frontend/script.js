@@ -9,51 +9,56 @@ window.onload = function() {
 };
 
 function renderMenu() {
-    const menu = document.getElementById('menu');
-    menu.innerHTML = '';
+    updateMessage('Preparing your game...', 'yellow');
+
     // Cria inputs com valores padrão
-
-    menu.appendChild(document.createTextNode("Width: "));
-    const widthInput = document.createElement('input');
-    widthInput.type = 'number';
-    widthInput.id = 'width';
-    widthInput.value = default_width;
-    menu.appendChild(widthInput);
-
-    menu.appendChild(document.createTextNode("Height: "));
-    const heightInput = document.createElement('input');
-    heightInput.type = 'number';
-    heightInput.id = 'height';
-    heightInput.value = default_height;
-    menu.appendChild(heightInput);
-
-    menu.appendChild(document.createTextNode("Number of mines: "));
-    const nminesInput = document.createElement('input');
-    nminesInput.type = 'number';
-    nminesInput.id = 'nmines';
-    nminesInput.value = default_mine_count;
-    menu.appendChild(nminesInput);
-
-    const rebootButton = document.createElement('button');
-    rebootButton.textContent = 'reboot?';
-    rebootButton.id = 'rebootButton'
-    menu.appendChild(rebootButton)
-
-    rebootButton.addEventListener('click', newGame);
-
-    [widthInput, heightInput, nminesInput].forEach(input => {
-        input.addEventListener('change', newGame);
-    });
+    addInput('parameters', 'width', default_width, 'number', 'Width:')
+    addInput('parameters', 'height', default_height, 'number', 'Height:')
+    addInput('parameters', 'nmines', default_mine_count, 'number', 'Number of mines:')
+    addButton('buttons', 'rebootButton', 'reboot?');
 
     // Adiciona evento onchange que chama newGame()
     newGame(); // chama gameCreate com valores atuais
 }
 
-function newGame() {
+async function newGame() {
+    updateMessage('Preparing your game...', 'yellow');
     const width = parseInt(document.getElementById('width').value);
     const height = parseInt(document.getElementById('height').value);
     const mine_count = parseInt(document.getElementById('nmines').value);
-    gameCreate(width, height, mine_count);
+    await gameCreate(width, height, mine_count);
+    updateMessage('Playing...', 'yellow');
+}
+
+function updateMessage(text, type) {
+    div_message = document.getElementById('message');
+    div_message.textContent = text;
+    div_message.className = type;
+}
+
+function addInput(parentId, elementId, value, type, text_message) {
+    const parent = document.getElementById(parentId);
+
+    const newInput = document.createElement('input');
+
+    parent.appendChild(document.createTextNode(text_message));
+
+    newInput.type = type;
+    newInput.id = elementId;
+    newInput.value = value;
+    parent.appendChild(newInput);
+    newInput.addEventListener('change', newGame);
+}
+
+function addButton(parentId, elementId, value) {
+    const container = document.getElementById(parentId);
+
+    const newButton = document.createElement('button');
+
+    newButton.id = elementId;
+    newButton.textContent = value;
+    container.appendChild(newButton);
+    newButton.addEventListener('click', newGame);
 }
 
 // frontend game creation request logic
@@ -82,6 +87,48 @@ async function gameCreate(width, height, mine_count) {
     }
 }
 
+function createCellElement(app, cell) {
+    const div_cell = document.createElement('div');
+    div_cell.className = 'cell';
+    
+    if (cell.is_flagged) div_cell.classList.add('flagged');
+    if (cell.is_mine && cell.is_revealed) div_cell.classList.add('mine');
+
+    // configure display text
+    div_cell.textContent = '';
+    if (cell.is_revealed) {
+        div_cell.classList.add('revealed');
+        if (cell.is_mine)
+            div_cell.textContent = '🟐';
+        else if (cell.neighbor_mines)
+            div_cell.textContent = cell.neighbor_mines;
+    }
+    else if (cell.is_flagged)
+        div_cell.textContent = '⚑';
+
+    // save coordinates
+    div_cell.dataset.x = cell.x;
+    div_cell.dataset.y = cell.y;
+
+    // add left click
+    div_cell.addEventListener('click', function() {
+        const x = parseInt(this.dataset.x);
+        const y = parseInt(this.dataset.y);
+        clickCell(x, y);
+    });
+
+    // add right click (flag)
+    div_cell.addEventListener('contextmenu', function(event) {
+        event.preventDefault(); // prevents menu
+        const x = parseInt(this.dataset.x);
+        const y = parseInt(this.dataset.y);
+        flagCell(x, y);
+    });
+
+    // add cell to container
+    app.appendChild(div_cell);
+}
+
 function renderBoard (boardData) {
     const app = document.getElementById('app');
     app.innerHTML = ''; // container cleaned
@@ -93,46 +140,7 @@ function renderBoard (boardData) {
         const line = boardData[y];
         for (let x = 0; x < line.length; x++) {
             const cell = line[x];
-
-            const div_cell = document.createElement('div');
-            div_cell.className = 'cell';
-            
-            if (cell.is_flagged) div_cell.classList.add('flagged');
-            if (cell.is_mine && cell.is_revealed) div_cell.classList.add('mine');
-
-            // configure display text
-            div_cell.textContent = '';
-            if (cell.is_revealed) {
-                div_cell.classList.add('revealed');
-                if (cell.is_mine)
-                    div_cell.textContent = '🟐';
-                else if (cell.neighbor_mines)
-                    div_cell.textContent = cell.neighbor_mines;
-            }
-            else if (cell.is_flagged)
-                div_cell.textContent = '⚑';
-
-            // save coordinates
-            div_cell.dataset.x = x;
-            div_cell.dataset.y = y;
-
-            // add left click
-            div_cell.addEventListener('click', function() {
-                const x = parseInt(this.dataset.x);
-                const y = parseInt(this.dataset.y);
-                clickCell(x, y);
-            });
-
-            // add right click (flag)
-            div_cell.addEventListener('contextmenu', function(event) {
-                event.preventDefault(); // prevents menu
-                const x = parseInt(this.dataset.x);
-                const y = parseInt(this.dataset.y);
-                flagCell(x, y);
-            });
-
-            // add cell to container
-            app.appendChild(div_cell);
+            createCellElement(app, cell);
         }
     }
 }
@@ -156,8 +164,8 @@ async function clickCell(x, y) {
         window.boardData = data.board;
         renderBoard(data.board);
         
-        if (data.state == 'lost') alert('KABOOM');
-        else if (data.state == 'won') alert('YOU WIN');
+        if (data.state == 'lost') updateMessage('KABOOM', 'red');
+        else if (data.state == 'won') updateMessage('YOU WIN', 'green');
         
         if (data) console.log('Clicked.');
         else console.error('An unknown error has occurred while trying to click.')

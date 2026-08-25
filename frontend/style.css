@@ -7,11 +7,37 @@
 }
 
 #menu {
+    display: flex;
+    gap: 10px;
+    margin: 20px auto;
+    width: fit-content;
+}
+
+#message {
+    background-color: black;
+}
+
+#message.yellow {
+    color: #ffcc00;
+}
+
+#message.green {
+    color: #008000;
+}
+
+#message.red {
+    color: #ff0000;
+}
+
+#parameters {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin: 20px auto;
-    width: fit-content;
+}
+
+#buttons {
+    display: flex;
 }
 
 .cell {
