@@ -90,7 +90,7 @@ class Game:
 
     # Toggle flag
     def flag(self, x: int, y: int) -> None:
-        if self._game_ended():
+        if not self._game_playing():
             return
 
         self.board.flag(x, y)
@@ -151,6 +151,11 @@ class Game:
 
     def _game_ended(self):
         if self.state not in [GameState.PLAYING, GameState.WAITING]:
+            return True
+        return False
+
+    def _game_playing(self):
+        if self.state == GameState.PLAYING:
             return True
         return False
 

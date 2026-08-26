@@ -1,0 +1,44 @@
+.cell {
+    width: 23px;
+    height: 23px;
+    background-image: url('../assets/icons/bcg_unsel_15x15.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cell img {
+    /*
+     *  Cálculo das proporções:
+     *  fundo: 15x15
+     *  icone: 9x9
+     *  icone em relação ao fundo: 9/15 = 0.6 ou 60%
+     */
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    display: block;
+}
+
+.cell:active {
+    background-image: url('../assets/icons/bcg_sel_15x15.png');
+}
+
+.cell.revealed {
+    background-image: url('../assets/icons/bcg_revealed_safe_15x15.png');
+}
+
+.cell.flagged {
+    background-image: url('../assets/icons/bcg_unsel_15x15.png');
+}
+
+.cell.mine {
+    background-image: url('../assets/icons/bcg_revealed_mine_15x15.png');
+}

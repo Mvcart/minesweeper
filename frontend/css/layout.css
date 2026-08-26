@@ -1,0 +1,122 @@
+body {
+    background-color: black;
+}
+
+#frame {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto 1fr auto auto auto;
+    width: fit-content;
+    margin: 20px auto;
+    image-rendering: pixelated;
+}
+
+.panel_square {
+    width: 9px;
+    height: 9px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+#panel_tl {
+    background-image: url('../assets/icons/panel_corner_tl.png');
+}
+
+#panel_bl {
+    background-image: url('../assets/icons/panel_corner_bl.png');
+}
+
+#panel_tr {
+    background-image: url('../assets/icons/panel_corner_tr.png');
+}
+
+#panel_br {
+    background-image: url('../assets/icons/panel_corner_br.png');
+}
+
+.panel_side_vertical {
+    background-repeat: repeat-y;
+    background-size: 100% auto;
+}
+
+.panel_side_horizontal {
+    background-repeat: repeat-x;
+    background-size: 100% auto;
+}
+
+#panel_l_top, #panel_l_bottom {
+    background-image: url('../assets/icons/panel_side_l.png');
+}
+
+#panel_r_top, #panel_r_bottom {
+    background-image: url('../assets/icons/panel_side_r.png');
+}
+
+#panel_t {
+    background-image: url('../assets/icons/panel_side_t.png');
+}
+
+#panel_b {
+    background-image: url('../assets/icons/panel_side_b.png');
+}
+
+#panel_bar {
+    background-image: url('../assets/icons/panel_bar.png');
+}
+
+#panel_l_middle {
+    background-image: url('../assets/icons/panel_middle_l.png');
+}
+
+#panel_r_middle {
+    background-image: url('../assets/icons/panel_middle_r.png');
+}
+
+#panel_c_game {
+    display: grid;
+}
+
+#panel_c_info {
+    height: 40px;
+    background-color: #f0f0f0;
+}
+
+#menu {
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f0f0f0;
+}
+
+#message {
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    margin: var(--submenu_margin);
+    text-align: center;
+    background-color: black;
+}
+
+#message.yellow {
+    color: #ffcc00;
+}
+
+#message.green {
+    color: #008000;
+}
+
+#message.red {
+    color: #ff0000;
+}
+
+#parameters {
+    display: grid;
+    margin: var(--submenu_margin);
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 20px auto;
+}
+
+#buttons {
+    margin: var(--submenu_margin);
+    display: flex;
+}

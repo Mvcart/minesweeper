@@ -1,17 +1,40 @@
 <!DOCTYPE html>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='red'>🟐</text></svg>">
 <head>
     <meta charset="UTF-8">
     <title>Minesweeper</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/cells.css">
 </head>
 <body>
     <script src="script.js"></script>
-    <div id="app"></div>
-    <div id="menu">
-        <div id="message"></div>
-        <div id="parameters"></div>
-        <div id="buttons"></div>
+    <div id="app">
+        <div id="frame">
+            <div id="panel_tl" class="panel_square"></div>
+            <div id="panel_t"></div>
+            <div id="panel_tr" class="panel_square"></div>
+            <div id="panel_l_top"></div>
+            <div id="panel_c_info">
+                <div id="info_time"></div>
+                <div id="info_gamestate_icon"></div>
+                <div id="info_nremainingmines"></div>
+            </div>
+            <div id="panel_r_top"></div>
+            <div id="panel_l_middle" class="panel_square"></div>
+            <div id="panel_bar"></div>
+            <div id="panel_r_middle" class="panel_square"></div>
+            <div id="panel_l_bottom"></div>
+            <div id="panel_c_game"></div>
+            <div id="panel_r_bottom"></div>
+            <div id="panel_bl" class="panel_square"></div>
+            <div id="panel_b"></div>
+            <div id="panel_br" class="panel_square"></div>
+        </div>
+        <div id="menu">
+            <div id="message"></div>
+            <div id="parameters"></div>
+            <div id="buttons"></div>
+        </div>
     </div>
 </body>
 </html>

@@ -94,17 +94,21 @@ function createCellElement(app, cell) {
     if (cell.is_flagged) div_cell.classList.add('flagged');
     if (cell.is_mine && cell.is_revealed) div_cell.classList.add('mine');
 
-    // configure display text
-    div_cell.textContent = '';
+    // configure display icon
+    const cell_icon = document.createElement('img');
     if (cell.is_revealed) {
         div_cell.classList.add('revealed');
-        if (cell.is_mine)
-            div_cell.textContent = '🟐';
-        else if (cell.neighbor_mines)
+        if (cell.is_mine) {
+            cell_icon.src = 'assets/icons/icon_mine_15x15.png';
+            div_cell.appendChild(cell_icon);
+        }
+        else if (cell.neighbor_mines) {
             div_cell.textContent = cell.neighbor_mines;
+        }
+    } else if (cell.is_flagged) {
+        cell_icon.src = 'assets/icons/icon_flag.png';
+        div_cell.appendChild(cell_icon);
     }
-    else if (cell.is_flagged)
-        div_cell.textContent = '⚑';
 
     // save coordinates
     div_cell.dataset.x = cell.x;
@@ -130,17 +134,17 @@ function createCellElement(app, cell) {
 }
 
 function renderBoard (boardData) {
-    const app = document.getElementById('app');
-    app.innerHTML = ''; // container cleaned
+    const div_game = document.getElementById('panel_c_game');
+    div_game.innerHTML = ''; // container cleaned
 
     const cols = boardData[0] ? boardData[0].length : 9;
-    app.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
+    div_game.style.gridTemplateColumns = `repeat(${cols}, 23px)`;
     
     for (let y = 0; y < boardData.length; y++) {
         const line = boardData[y];
         for (let x = 0; x < line.length; x++) {
             const cell = line[x];
-            createCellElement(app, cell);
+            createCellElement(div_game, cell);
         }
     }
 }
@@ -157,10 +161,10 @@ async function clickCell(x, y) {
                 y: y
             })
         });
-        
+
         // awaits for the response (updated game json)
         const data = await response.json();
-        
+
         window.boardData = data.board;
         renderBoard(data.board);
         
